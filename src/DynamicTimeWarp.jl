@@ -33,6 +33,9 @@ function dtw(seq1::Vector, seq2::Vector, distance::Function=Distance.square)
     cost[m,n], match1, match2
 end
 
+
+# Compute the optimal track backwards through the cost matrix from end to beginning.
+
 function trackback(D)
     i,j = size(D)
     p,q = [i],[j]
@@ -40,17 +43,18 @@ function trackback(D)
         tb = indmin([D[i-1,j-1], D[i-1,j], D[i,j-1]])
         tb in [1,2] && (i-=1)
         tb in [1,3] && (j-=1)
-        unshift!(p,i)
-        unshift!(q,j)
+        push!(p,i)
+        push!(q,j)
     end
-    unshift!(p,1)
-    unshift!(q,1)
-    p,q
+    push!(p,1)
+    push!(q,1)
+    reverse(p), reverse(q)
 end
+
 
 using PyPlot
 
-function plotdtw{T<:Real}(seq1::Vector{T}, seq2::Vector{T}, offset::Float64=0.0)
+function plotdtw(seq1::Vector, seq2::Vector, offset=0.0)
     cost, match1, match2 = dtw(seq1, seq2)
     if offset == 0.0
         offset = 2*(std(seq1) + std(seq2)) + mean(seq1) - mean(seq2)
