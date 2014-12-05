@@ -28,33 +28,25 @@ function dtw(seq1::Vector, seq2::Vector, distance::Function=Distance.square)
         end
     end
 
-    # Reconstruct the path. This is done from end-to-beginning and then reversed
-    match1 = Int[m]
-    match2 = Int[n]
-    r,c = m,n
-    while r>1 && c>1
-        down,diag,left = cost[r-1,c], cost[r-1,c-1], cost[r,c-1]
-        if diag <= min(down,left)
-            r -= 1
-            c -= 1
-        elseif down<left
-            r -= 1
-        else
-            c -= 1
-        end
-        push!(match1, r)
-        push!(match2, c)
-    end
-    r = match1[end]
-    while r>1; r-=1; push!(match1, r); push!(match2, 1); end
-    c = match2[end]
-    while c>1; c-=1; push!(match1, 1); push!(match2, c); end 
-    reverse!(match1)
-    reverse!(match2)
+    match1, match2 = trackback(cost)
     
     cost[m,n], match1, match2
 end
 
+function trackback(D)
+    i,j = size(D)
+    p,q = [i],[j]
+    while i > 1 && j > 1
+        tb = indmin([D[i-1,j-1], D[i-1,j], D[i,j-1]])
+        tb in [1,2] && (i-=1)
+        tb in [1,3] && (j-=1)
+        unshift!(p,i)
+        unshift!(q,j)
+    end
+    unshift!(p,1)
+    unshift!(q,1)
+    p,q
+end
 
 using PyPlot
 
