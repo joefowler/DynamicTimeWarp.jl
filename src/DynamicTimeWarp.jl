@@ -69,6 +69,36 @@ end
 
 
 
+#function dtwbaryavg_iteration(dbavg::Vector, sequences::Array{Array{1},1})
+function dtwbaryavg_iteration(dbavg::Vector, sequences::Array)
+    const Nseq = length(sequences)
+    count = zeros(Int, length(dbavg))
+    sumcoords = zeros(Float64, length(dbavg))
+    
+    for i=1:Nseq
+        cost, match1, match2 = dtw(dbavg, sequences[i])
+        for j=1:length(match2)
+            count[match1[j]] += 1
+            sumcoords[match1[j]] += sequences[i][match2[j]]
+        end
+        println("Compared $i to the standard")
+    end
+    sumcoords = sumcoords ./ count
+end
+
+
+#function dtwbaryavg{T<:Real}(sequences::Array{Array{T,N},1})
+function dtwbaryavg(sequences)
+    dbavg = copy(sequences[1])
+    clf()
+    for i = 1:5
+        dbavg = dtwbaryavg_iteration(dbavg, sequences)
+        plot(dbavg)
+    end
+    dbavg
+end
+
+
 # This sub-module contains various functions returning pointwise distances
 # between elements from two seequences.
 
@@ -93,6 +123,7 @@ end # module Distance
 
 
 export
-    dtw
+dtw,
+dtwbaryavg
 
 end # module
