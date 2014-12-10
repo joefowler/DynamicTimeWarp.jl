@@ -1,7 +1,5 @@
 module DynamicTimeWarp
 
-# package code goes here
-
 # Dynamic Time Warping with a user-specified distance function
 
 function dtw(seq1::Vector, seq2::Vector, distance::Function=Distance.square)
@@ -58,6 +56,40 @@ function trackback(D)
         push!(cols,c)
     end
     reverse(cols), reverse(rows)
+end
+
+
+# The FastDTW approximation to the DTW, described in "FastDTW: Toward Accurate
+# Dynamic Time Warping in Linear Time and Space", S Salvador & P Chan, __Intelligent
+# Data Analysis__ (2007).
+
+function fastdtw(seq1::Vector, seq2::Vector, radius::Integer, 
+                 distance::Function=Distance.square)
+    const MinSize = radius + 2
+    const N1 = length(seq1)
+    const N2 = length(seq2)
+    if N1 <= MinSize && N2 <= MinSize
+        return (dtw(seq1, seq2))
+    end
+
+    compressed1 = compress(seq1)
+    compressed2 = compress(seq2)
+
+    _cost, lowrescol, lowresrow = fastdtw(compressed1, compressed2, radius, distance)
+    
+    idx2min, idx2max = computewindow(lowrescol, lowresrow, radius)
+    dtwwindowed(seq1, seq2, idx2min, idx2max, distance)
+end
+
+
+
+# Given the lists of (col,row) indices for the optimal path, compute a "window"
+# around that path of the given radius.
+# Returns (rowmin, rowmax), each a vector of length maximum(pathcols), representing
+# for each column, the minimum and maximum row numbers used in that column.
+
+function computewindow(pathcols, pathrows, radius)
+    error("computewindow not yet implemented")
 end
 
 
@@ -222,6 +254,7 @@ function dtwbaryavg_iteration(dbavg::Vector, sequences::Array)
 end
 
 
+
 #function dtwbaryavg{T<:Real}(sequences::Array{Array{T,N},1})
 function dtwbaryavg(sequences)
     dbavg = copy(sequences[1])
@@ -235,7 +268,7 @@ end
 
 
 # This sub-module contains various functions returning pointwise distances
-# between elements from two seequences.
+# between elements from two sequences.
 
 module Distance
 square(x,y) = (x-y)^2
@@ -260,6 +293,7 @@ end # module Distance
 export
 dtw,
 dtwwindowed,
+fastdtw,
 dtwbaryavg
 
 end # module
