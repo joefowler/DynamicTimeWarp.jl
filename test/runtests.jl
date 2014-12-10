@@ -53,3 +53,21 @@ a=zeros(Int,6)
 b=1+a
 cost, match1, match2 = dtw(a,b)
 @test cost==length(a)
+
+# Verify that a tie prefers diagonal moves
+a=[1,1,1]
+b=[1,1,1]
+cost, pa, pb = dtw(a,b)
+@test cost==0
+@test pa==[1,2,3]
+@test pb==[1,2,3]
+
+# Verify that trackback ends properly if it reaches an edge before reaching [1,1]
+# Also check that trackback prefers diagonal moves
+a=[0,1,1,1]
+b=[0,0,1,1]
+cost, pa, pb = dtw(a,b)
+@test cost==0
+@test pa==[1,1,2,3,4]
+@test pb==[1,2,3,3,4]
+
