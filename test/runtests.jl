@@ -71,3 +71,73 @@ cost, pa, pb = dtw(a,b)
 @test pa==[1,1,2,3,4]
 @test pb==[1,2,3,3,4]
 
+######
+# Test DTW with windows
+######
+
+# Verify that a tie prefers diagonal moves
+a=[1,1,1]
+b=[1,1,1]
+cost, pa, pb = dtwwindowed(a,b,[1,1,1],[3,3,3])
+@test cost==0
+@test pa==[1,2,3]
+@test pb==[1,2,3]
+
+# Verify that trackback ends properly if it reaches an edge before reaching [1,1]
+# Also check that trackback prefers diagonal moves
+a=[0,1,1,1]
+b=[0,0,1,1]
+cost, pa, pb = dtwwindowed(a,b,[1,1,1,1],[4,4,4,4])
+@test cost==0
+@test pa==[1,1,2,3,4]
+@test pb==[1,2,3,3,4]
+
+# First do the windowed test w/o windows
+a=[0,1,2,3,4,4,4,4]
+b=[0,0,1,2,2,2,3,4]
+best_pa = [1,1,2,3,3,3,4,5,6,7,8]
+best_pb = [1,2,3,4,5,6,7,8,8,8,8]
+cost, pa, pb = dtw(a,b)
+@test cost == 0
+@test pa == best_pa
+@test pb == best_pb
+
+# Wide window, not touching optimal path
+rmin = [1,1,1,2,3,4,5,6]
+rmax = [4,6,7,8,8,8,8,8]
+cost, pa, pb = dtwwindowed(a,b,rmin,rmax)
+@test cost == 0
+@test pa == best_pa
+@test pb == best_pb
+
+# Bottom of window is optimal path
+rmin = [1,3,4,7,8,8,8,8]
+rmax = [4,6,7,8,8,8,8,8]
+cost, pa, pb = dtwwindowed(a,b,rmin,rmax)
+@test cost == 0
+@test pa == best_pa
+@test pb == best_pb
+
+# Top of window is optimal path
+rmin = [1,1,1,2,3,4,5,6]
+rmax = [2,3,6,7,8,8,8,8]
+cost, pa, pb = dtwwindowed(a,b,rmin,rmax)
+@test cost == 0
+@test pa == best_pa
+@test pb == best_pb
+
+# Top and bottom of window are optimal path
+rmin = [1,3,4,7,8,8,8,8]
+rmax = [2,3,6,7,8,8,8,8]
+cost, pa, pb = dtwwindowed(a,b,rmin,rmax)
+@test cost == 0
+@test pa == best_pa
+@test pb == best_pb
+
+# Now top of window cuts into optimal path
+rmin = [1,1,1,2,3,4,5,6]
+rmax = [4,4,5,6,7,8,8,8]
+cost, pa, pb = dtwwindowed(a,b,rmin,rmax)
+@test cost == 2
+@test pa == [1,1,2,3,3,4,5,6,7,8]
+@test pb == [1,2,3,4,5,6,7,8,8,8]
