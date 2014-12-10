@@ -1,11 +1,10 @@
 using DynamicTimeWarp
 using Base.Test
 
-# write your own tests here
-@test 1 == 1
-
-
+#############################################
 # Test the Distance functions
+#############################################
+
 Distance = DynamicTimeWarp.Distance
 @test Distance.square(0,0) == 0
 @test Distance.square(0,1) == 1
@@ -31,7 +30,10 @@ pc = Distance.poissonclosure(s1, s2)
 @test pc(0,5) == (5/sum(s2))^2
 
 
+#############################################
 # Test dtw itself
+#############################################
+
 a=[1,1,1,2,4,6,5,5,5,4,4,3,1,1,1]
 b=[1,1,2,4,6,6,6,5,4,4,4,3,3,3,1]
 cost, match1, match2 = dtw(a,b)
@@ -71,9 +73,11 @@ cost, pa, pb = dtw(a,b)
 @test pa==[1,1,2,3,4]
 @test pb==[1,2,3,3,4]
 
-######
+
+
+#############################################
 # Test DTW with windows
-######
+#############################################
 
 # Verify that a tie prefers diagonal moves
 a=[1,1,1]
@@ -141,3 +145,19 @@ cost, pa, pb = dtwwindowed(a,b,rmin,rmax)
 @test cost == 2
 @test pa == [1,1,2,3,3,4,5,6,7,8]
 @test pb == [1,2,3,4,5,6,7,8,8,8]
+
+
+#############################################
+# Test sequence compressions
+#############################################
+
+compress = DynamicTimeWarp.compress
+s=[0:2:98]
+s1 = compress(s)
+s2 = compress(s1)
+@test s1==float([1:4:97])
+@test s2==float(vcat([3:8:91],[97]))
+
+s = [1]
+s1 = compress(s)
+@test s1==[1.0]

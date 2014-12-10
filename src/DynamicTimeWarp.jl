@@ -174,6 +174,16 @@ end
 
 
 
+function compress(seq::Vector)
+    Navg = div(length(seq), 2)
+    evenseq = 0.5*(seq[1:2:end-1]+seq[2:2:end])
+    if length(seq)%2 == 1
+        return vcat(evenseq, [seq[end]])
+    end
+    evenseq
+end
+
+
 
 
 
