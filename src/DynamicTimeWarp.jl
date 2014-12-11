@@ -85,12 +85,45 @@ end
 
 # Given the lists of (col,row) indices for the optimal path, compute a "window"
 # around that path of the given radius.
-# Returns (rowmin, rowmax), each a vector of length maximum(pathcols), representing
+# Returns (rowmin, rowmax), each a vector of length pathcols[end], representing
 # for each column, the minimum and maximum row numbers used in that column.
 
 function computewindow(pathcols, pathrows, radius)
-    error("computewindow not yet implemented")
+    const Np = length(pathcols)
+    @assert Np == length(pathrows)
+    const Ncol = pathcols[end]
+    const Nrow = pathrows[end]
+
+    # Find the min/max row at each column in the path.
+    pathmin = zeros(Int, Ncol)
+    pathmax = zeros(Int, Ncol)
+    for i=1:Np
+        c,r = pathcols[i], pathrows[i]
+        pathmax[c] = r
+        if pathmin[c] == 0
+            pathmin[c] = r
+        end
+    end
+
+    # The window in each column for "radius" r starts at the pathmin
+    # of the rth-previous column and ends at the pathmax of the
+    # rth-next column, plus (in each case) the radius.
+    if radius < Ncol-1 && radius < Nrow-1
+        rowmin = vcat(fill(1,radius), pathmin[1:end-radius]-radius)
+        rowmax = vcat(pathmax[radius+1:end]+radius, fill(Nrow,radius))
+
+        # Window values must be in the range [1:Nrow].
+        for c=1:Ncol
+            if rowmin[c]<1; rowmin[c]=1; end
+            if rowmax[c]>Nrow; rowmax[c]=Nrow; end
+        end
+    else
+        rowmin = fill(1,Ncol)
+        rowmax = fill(Nrow,Ncol)
+    end
+    rowmin, rowmax
 end
+
 
 
 # Do DTW in a subset of the full space, the subset specified by
