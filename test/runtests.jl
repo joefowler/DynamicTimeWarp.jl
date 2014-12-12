@@ -161,3 +161,103 @@ s2 = compress(s1)
 s = [1]
 s1 = compress(s)
 @test s1==[1.0]
+
+
+#############################################
+# Test window computation
+#############################################
+computewindow = DynamicTimeWarp.computewindow
+
+# Simplest path (along the diagonal)
+p=[1:8]
+rmin,rmax = computewindow(p,p,1)
+@test rmin==[1,1,1,2,3,4,5,6]
+@test rmax==[3,4,5,6,7,8,8,8]
+
+rmin,rmax = computewindow(p,p,2)
+@test rmin==[1,1,1,1,1,2,3,4]
+@test rmax==[5,6,7,8,8,8,8,8]
+
+# A warpy path
+pa=[1,1,2,3,4,5,6,7,8,8,8]
+pb=[1,2,3,3,3,4,4,5,6,7,8]
+rmin,rmax = computewindow(pa, pb, 1)
+@test pa[end]==length(rmin)
+@test pa[end]==length(rmax)
+@test rmin==[1,1,2,2,2,3,3,4]
+@test rmax==[4,4,4,5,5,6,8,8]
+
+rmin,rmax = computewindow(pa, pb, 2)
+@test pa[end]==length(rmin)
+@test pa[end]==length(rmax)
+@test rmin==[1,1,1,1,1,1,2,2]
+@test rmax==[5,5,6,6,7,8,8,8]
+
+rmin,rmax = computewindow(pa, pb, 20)
+@test pa[end]==length(rmin)
+@test pa[end]==length(rmax)
+@test rmin==fill(1,8)
+@test rmax==fill(8,8)
+
+# Extreme path: follows left then upper edge
+pa=[1,1,1,1,1,1,1,1,2,3,4,5,6,7,8]
+pb=[1,2,3,4,5,6,7,8,8,8,8,8,8,8,8]
+rmin,rmax = computewindow(pa, pb, 1)
+@test pa[end]==length(rmin)
+@test pa[end]==length(rmax)
+@test rmin==[1,1,7,7,7,7,7,7]
+@test rmax==[8,8,8,8,8,8,8,8]
+
+rmin,rmax = computewindow(pa, pb, 2)
+@test pa[end]==length(rmin)
+@test pa[end]==length(rmax)
+@test rmin==[1,1,1,6,6,6,6,6]
+@test rmax==[8,8,8,8,8,8,8,8]
+
+
+# More columns than rows
+pa=[1,2,3,4,5,6,7,8]
+pb=[1,2,3,4,4,4,4,4]
+rmin,rmax = computewindow(pa, pb, 1)
+@test rmin==[1,1,1,2,3,3,3,3]
+@test rmax==[3,4,4,4,4,4,4,4]
+
+rmin,rmax = computewindow(pa, pb, 2)
+@test rmin==[1,1,1,1,1,2,2,2]
+@test rmax==fill(4,8)
+
+rmin,rmax = computewindow(pa, pb, 3)
+@test rmin==fill(1,8)
+@test rmax==fill(4,8)
+
+rmin,rmax = computewindow(pa, pb, 4)
+@test rmin==fill(1,8)
+@test rmax==fill(4,8)
+
+rmin,rmax = computewindow(pa, pb, 47)
+@test rmin==fill(1,8)
+@test rmax==fill(4,8)
+
+
+# More rows than columns
+pa,pb = pb,pa
+rmin,rmax = computewindow(pa, pb, 1)
+@test rmin==[1,1,1,2]
+@test rmax==[3,4,8,8]
+
+rmin,rmax = computewindow(pa, pb, 2)
+@test rmin==fill(1,4)
+@test rmax==[5,8,8,8]
+
+rmin,rmax = computewindow(pa, pb, 3)
+@test rmin==fill(1,4)
+@test rmax==fill(8,4)
+
+rmin,rmax = computewindow(pa, pb, 4)
+@test rmin==fill(1,4)
+@test rmax==fill(8,4)
+
+rmin,rmax = computewindow(pa, pb, 47)
+@test rmin==fill(1,4)
+@test rmax==fill(8,4)
+
