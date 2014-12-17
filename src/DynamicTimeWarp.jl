@@ -6,6 +6,9 @@
 
 module DynamicTimeWarp
 
+include("WindowedMatrix.jl")
+
+
 # Dynamic Time Warping with a user-specified distance function
 
 function dtw(seq1::Vector, seq2::Vector, distance::Function=Distance.square)
@@ -41,7 +44,7 @@ end
 # Compute the optimal track backwards through the cost matrix from end to beginning.
 # Return (columns, rows) of the optimal track.
 
-function trackback(D)
+function trackback(D::Union(Matrix,WindowedMatrix))
     r,c = size(D)
     rows,cols = [r],[c]
     while r > 1 && c > 1
@@ -233,6 +236,7 @@ function dtwwindowed(seq1::Vector, seq2::Vector,
     
     cost11 = distance(seq1[1], seq2[1])
     cost = zeros(typeof(cost11), N)
+    #cost = WindowedMatrix(idx2min, idx2max, Inf)
 
     # First column first
     cost[1] = cost11
