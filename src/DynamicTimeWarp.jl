@@ -65,10 +65,10 @@ end
 
 function fastdtw(seq1::Vector, seq2::Vector, radius::Integer, 
                  distance::Function=Distance.square)
-    const MinSize = min(radius + 2, 10)
+    const MinSize = max(radius + 2, 10)
     const N1 = length(seq1)
     const N2 = length(seq2)
-    if N1 <= MinSize && N2 <= MinSize
+    if N1 <= MinSize || N2 <= MinSize
         return (dtw(seq1, seq2, distance))
     end
 
@@ -76,10 +76,27 @@ function fastdtw(seq1::Vector, seq2::Vector, radius::Integer,
     compressed2 = compress(seq2)
 
     _cost, lowrescol, lowresrow = fastdtw(compressed1, compressed2, radius, distance)
-
     hirescol, hiresrow = expandpath(lowrescol, lowresrow, N1, N2)
     idx2min, idx2max = computewindow(hirescol, hiresrow, radius)
-    dtwwindowed(seq1, seq2, idx2min, idx2max, distance)
+    cost1, newcol, newrow = dtwwindowed(seq1, seq2, idx2min, idx2max, distance)
+    if length(seq1)<51
+        @show compressed1
+        @show compressed2
+        @show seq1
+        @show seq2
+        @show length(compressed1), lowrescol
+        @show length(compressed2), lowresrow
+    end
+    if length(seq1) < 1590
+        subplot(3,2,int(log2(length(seq1)))-4, aspect="equal")
+        title("$N1, $N2:high-res sizes")
+        plot(lowrescol, 10+lowresrow, "o")
+        plot(hirescol, hiresrow, "d")
+        plot([1:N1], idx2min-0.5, "b")
+        plot([1:N1], idx2max+0.5, "b")
+        plot(newcol, newrow, "sg")
+    end
+    cost1, newcol, newrow
 end
 
 

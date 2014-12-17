@@ -261,3 +261,20 @@ rmin,rmax = computewindow(pa, pb, 47)
 @test rmin==fill(1,4)
 @test rmax==fill(8,4)
 
+
+#############################################
+# Test DTW and FastDTW on simple, large cases
+#############################################
+t=[1:1600]
+pktimes=[100,300,1000,1300]
+x = 1*exp(-0.5*((t-pktimes[1])/100).^2);
+x+= 2*exp(-0.5*((t-pktimes[2])/150).^2);
+x+= 3*exp(-0.5*((t-pktimes[3])/250).^2);
+x+= 4*exp(-0.5*((t-pktimes[4])/250).^2);
+y = x[1:2:end];
+cost,px,py = dtw(x,y)
+cost1,qx,qy = DynamicTimeWarp.fastdtw(x, y, 15)
+clf()
+plot(px,py,"or",lw=0)
+plot(qx,qy,"ob",lw=2)
+
