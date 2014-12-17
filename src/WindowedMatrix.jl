@@ -12,7 +12,7 @@
 # December 2014
 #
 
-immutable WindowedMatrix{T<:Real}
+immutable WindowedMatrix{T<:Real} <: AbstractArray{T,2}
     nrow::Int
     ncol::Int
     ncells::Int
@@ -50,7 +50,9 @@ WindowedMatrix(rmin::Vector{Int}, rmax::Vector{Int}) =
     WindowedMatrix{Float64}(rmin, rmax, Inf)
 
 
+import Base: size, getindex, setindex!
 size(W::WindowedMatrix) = W.nrow, W.ncol
+size(W::WindowedMatrix, i) = size(W)[i]
 
 function getindex(W::WindowedMatrix, r::Integer, c::Integer)
     if c<1 || c>W.ncol || r<W.rowmin[c] || r>W.rowmax[c]
