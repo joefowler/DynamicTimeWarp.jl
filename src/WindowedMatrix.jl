@@ -77,7 +77,6 @@ end
 
 # To do:
 # 
-# * Ways to print as if a dense matrix
 # * Ways to convert to a dense matrix
 # * Can I make rowmin, rowmax, rowspercol, idxcol somehow immuatable? If not, then
 #   it's easy to break the invariants of the object.

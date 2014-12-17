@@ -81,39 +81,16 @@ function fastdtw(seq1::Vector, seq2::Vector, radius::Integer,
         return (dtw(seq1, seq2, distance))
     end
 
+    # Call recursively on a pair of sequences half this length
     compressed1 = compress(seq1)
     compressed2 = compress(seq2)
-
     _cost, lowrescol, lowresrow = fastdtw(compressed1, compressed2, radius, distance)
+
+    # Now resample that path to the finer resolution, find the correct
+    # window around it, and get the DTW given that window.
     hirescol, hiresrow = expandpath(lowrescol, lowresrow, N1, N2)
     idx2min, idx2max = computewindow(hirescol, hiresrow, radius)
     cost1, newcol, newrow = dtwwindowed(seq1, seq2, idx2min, idx2max, distance)
-    if length(seq1)<51
-        @show length(compressed1), compressed1
-        @show length(compressed2), compressed2
-        @show lowrescol
-        @show lowresrow
-        @show hirescol
-        @show hiresrow
-        println()
-        @show idx2min
-        @show idx2max
-        @show seq1
-        @show seq2
-        @show newcol
-        @show newrow
-        println("\n")
-    end
-    if length(seq1) < 1590
-        subplot(3,2,int(log2(length(seq1)))-4, aspect="equal")
-        title("$N1, $N2:high-res sizes")
-        plot(lowrescol, 10+lowresrow, "or")
-        plot(hirescol, hiresrow, "db")
-        plot([1:N1], idx2min-0.5, "b")
-        plot([1:N1], idx2max+0.5, "b")
-        plot(newcol, newrow, "sg")
-    end
-    cost1, newcol, newrow
 end
 
 
