@@ -146,6 +146,29 @@ cost, pa, pb = dtwwindowed(a,b,rmin,rmax)
 @test pa == [1,1,2,3,3,4,5,6,7,8]
 @test pb == [1,2,3,4,5,6,7,8,8,8]
 
+# Compare windowed and regular on non-square geometry:
+seq1=[1:16]
+seq2=seq1[1:2:end]
+cost,pa,pb = dtw(seq1,seq2)
+n1,n2 = length(seq1), length(seq2)
+cost2,qa,qb = dtwwindowed(seq1, seq2, fill(1,n1), fill(n2,n1))
+@show pa,pb
+@show qa,qb
+@test cost==cost2
+@test pa==qa
+@test pb==qb
+
+seq1=[1.2051,1.7890,2.1314,2.2423,2.2101,2.0234,1.6898,1.3422,1.1530,1.2197,1.5435,2.07147,2.7359,3.469,4.2033,4.8704,5.4056,5.75243,5.8693,5.7362,5.35974,4.7761,4.0482,3.2548,2.4764]
+seq2=[1.4927,2.1859,2.1182,1.5186, 1.1858,1.8034,3.0968,4.5317,5.5763,5.8038,5.0724,3.6576,2.4823]
+
+cost,pa,pb = dtw(seq1,seq2)
+n1,n2 = length(seq1), length(seq2)
+cost2,qa,qb = dtwwindowed(seq1, seq2, fill(1,n1), fill(n2,n1))
+@test cost==cost2
+@test pa==qa
+@test pb==qb
+
+
 
 #############################################
 # Test sequence compressions
@@ -261,3 +284,18 @@ rmin,rmax = computewindow(pa, pb, 47)
 @test rmin==fill(1,4)
 @test rmax==fill(8,4)
 
+
+#############################################
+# Test DTW and FastDTW on simple, large cases
+#############################################
+t=[1:1600]
+pktimes=[100,300,1000,1300]
+x = 1*exp(-0.5*((t-pktimes[1])/100).^2);
+x+= 2*exp(-0.5*((t-pktimes[2])/150).^2);
+x+= 3*exp(-0.5*((t-pktimes[3])/250).^2);
+x+= 4*exp(-0.5*((t-pktimes[4])/250).^2);
+y = x[1:2:end];
+cost,px,py = dtw(x,y)
+cost1,qx,qy = DynamicTimeWarp.fastdtw(x, y, 15)
+
+## Need to actually TEST something here!
