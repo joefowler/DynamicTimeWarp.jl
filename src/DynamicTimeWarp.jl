@@ -1,7 +1,7 @@
 #
 # Joe Fowler and Galen O'Neil
 # NIST Boulder Laboratories
-# December 2014
+# December 2014 - February 2015
 #
 
 module DynamicTimeWarp
@@ -353,14 +353,21 @@ absval(x,y) = abs(x-y)
 
 # And now a Poisson-sensitive distance.
 # Call this with the 2 sequences, and it returns a closure, a function that
-# measures Poisson-distance for elements of those two particular sequences
-function poissonclosure(seq1, seq2)
+# measures Poisson-distance for elements of those two particular sequences.
+# Alternately, call it with two integers, representing the number of elements
+# in each sequence.
+function poissonpenalty(seq1::Vector, seq2::Vector)
     n1=sum(seq1)
     n2=sum(seq2)
+    poissonpenalty(n1, n2)
+end
+
+
+function poissonpenalty(n1::Integer, n2::Integer)
     function pdist(x,y)
-        ### WARNING! This does not yet weight properly for Poissonianness
-        ### It only accounts for differences in normalization.
-        (x/n1 - y/n2)^2
+        if x<=0 && y<=0; return 0; end
+        mu = float(x+y)/float(n1+n2)
+        return ((x-mu*n1)^2 + (y-mu*n2)^2) / (x+y)
     end
 end
 
