@@ -22,12 +22,20 @@ Distance = DynamicTimeWarp.Distance
 @test Distance.absval(-2,-5) == 3
 
 s1, s2 = [1:5], [2:2:10]
-pc = Distance.poissonclosure(s1, s2)
-@test pc(1,2) == 0
-@test pc(5,10) == 0
-@test pc(5,5) == (5/sum(s1)-5/sum(s2))^2
-@test pc(5,0) == (5/sum(s1))^2
-@test pc(0,5) == (5/sum(s2))^2
+pp1 = Distance.poissonpenalty(s1, s2)
+pp2 = Distance.poissonpenalty(15, 30)
+@test pp1(0,0) == 0
+@test pp2(0,0) == 0
+@test pp1(1,2) == 0
+@test pp1(5,10) == 0
+@test pp2(5,10) == 0
+@test pp1(9,0) == 8.0
+@test pp2(9,0) == 8.0
+@test pp1(0,9) == 2.0
+@test pp2(0,9) == 2.0
+@test pp1(9,9) == 1.0
+@test pp2(9,9) == 1.0
+
 
 
 #############################################
@@ -152,8 +160,6 @@ seq2=seq1[1:2:end]
 cost,pa,pb = dtw(seq1,seq2)
 n1,n2 = length(seq1), length(seq2)
 cost2,qa,qb = dtwwindowed(seq1, seq2, fill(1,n1), fill(n2,n1))
-@show pa,pb
-@show qa,qb
 @test cost==cost2
 @test pa==qa
 @test pb==qb
