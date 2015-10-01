@@ -21,7 +21,7 @@ Distance = DynamicTimeWarp.Distance
 @test Distance.absval(-2,5) == 7
 @test Distance.absval(-2,-5) == 3
 
-s1, s2 = [1:5], [2:2:10]
+s1, s2 = collect(1:5), collect(2:2:10)
 pp1 = Distance.poissonpenalty(s1, s2)
 pp2 = Distance.poissonpenalty(15, 30)
 @test pp1(0,0) == 0
@@ -54,7 +54,7 @@ cost, match1, match2 = dtw(a,b)
 @test cost==4
 
 
-a=[1:10]
+a=collect(1:10)
 b=a+1
 cost, match1, match2 = dtw(a,b)
 @test cost==2
@@ -155,7 +155,7 @@ cost, pa, pb = dtwwindowed(a,b,rmin,rmax)
 @test pb == [1,2,3,4,5,6,7,8,8,8]
 
 # Compare windowed and regular on non-square geometry:
-seq1=[1:16]
+seq1=collect(1:16)
 seq2=seq1[1:2:end]
 cost,pa,pb = dtw(seq1,seq2)
 n1,n2 = length(seq1), length(seq2)
@@ -181,11 +181,11 @@ cost2,qa,qb = dtwwindowed(seq1, seq2, fill(1,n1), fill(n2,n1))
 #############################################
 
 compress = DynamicTimeWarp.compress
-s=[0:2:98]
+s=collect(0:2:98)
 s1 = compress(s)
 s2 = compress(s1)
-@test s1==float([1:4:97])
-@test s2==float(vcat([3:8:91],[97]))
+@test s1==float(collect(1:4:97))
+@test s2==float(vcat(collect(3:8:91),[97]))
 
 s = [1]
 s1 = compress(s)
@@ -198,7 +198,7 @@ s1 = compress(s)
 computewindow = DynamicTimeWarp.computewindow
 
 # Simplest path (along the diagonal)
-p=[1:8]
+p=collect(1:8)
 rmin,rmax = computewindow(p,p,1)
 @test rmin==[1,1,1,2,3,4,5,6]
 @test rmax==[3,4,5,6,7,8,8,8]
@@ -294,7 +294,7 @@ rmin,rmax = computewindow(pa, pb, 47)
 #############################################
 # Test DTW and FastDTW on simple, large cases
 #############################################
-t=[1:1600]
+t=collect(1:1600)
 pktimes=[100,300,1000,1300]
 x = 1*exp(-0.5*((t-pktimes[1])/100).^2);
 x+= 2*exp(-0.5*((t-pktimes[2])/150).^2);
