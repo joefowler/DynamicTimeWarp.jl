@@ -1,26 +1,34 @@
-# The FastDTW approximation to the DTW, described in "FastDTW: Toward Accurate
-# Dynamic Time Warping in Linear Time and Space", S Salvador & P Chan, __Intelligent
-# Data Analysis__ (2007).
 
-function fastdtw(seq1::Vector, seq2::Vector, radius::Integer, 
-                 distance::Function=Distance.square)
+"""
+    cost,i1,i2 = fastdtw(seq1,seq2,radius,[dist=SqEuclidean])
+
+Computes FastDTW approximation to the DTW, described in Salvador & Chan,
+Intelligent Data Analysis (2007).
+"""
+function fastdtw(
+        seq1::Vector,
+        seq2::Vector,
+        radius::Integer, 
+        dist::SemiMetric=SqEuclidean()
+    )
+
     const MinSize = max(radius + 2, 10)
     const N1 = length(seq1)
     const N2 = length(seq2)
     if N1 <= MinSize || N2 <= MinSize
-        return (dtw(seq1, seq2, distance))
+        return (dtw(seq1, seq2, dist))
     end
 
     # Call recursively on a pair of sequences half this length
-    compressed1 = compress(seq1)
-    compressed2 = compress(seq2)
-    _cost, lowrescol, lowresrow = fastdtw(compressed1, compressed2, radius, distance)
+    compressed1 = compress2(seq1)
+    compressed2 = compress2(seq2)
+    _cost, lowrescol, lowresrow = fastdtw(compressed1, compressed2, radius, dist)
 
     # Now resample that path to the finer resolution, find the correct
     # window around it, and get the DTW given that window.
     hirescol, hiresrow = expandpath(lowrescol, lowresrow, N1, N2)
     idx2min, idx2max = computewindow(hirescol, hiresrow, radius)
-    cost1, newcol, newrow = dtwwindowed(seq1, seq2, idx2min, idx2max, distance)
+    cost1, newcol, newrow = dtw(seq1, seq2, idx2min, idx2max, dist)
 end
 
 
@@ -75,6 +83,19 @@ function expandpath(lowrescol, lowresrow, Ncol, Nrow)
     hirescol, hiresrow
 end
 
+# yshort = compress2(y)
+#   Returns a shortened time series that is half the length of the input sequence.
+#   The length of the compressed sequence is always even.
+function compress2(seq::AbstractVector)
+    # Navg = div(length(seq), 2)
+    evenseq = 0.5*(seq[1:2:end-1]+seq[2:2:end])
+    if length(seq)%2 == 1
+        return vcat(evenseq, [seq[end]])
+    end
+    evenseq
+end
+
+
 
 # Given the lists of (col,row) indices for the optimal path, compute a "window"
 # around that path of the given radius.
@@ -115,45 +136,4 @@ function computewindow(pathcols, pathrows, radius)
         rowmax = fill(Nrow,Ncol)
     end
     rowmin, rowmax
-end
-
-
-
-# Do DTW in a subset of the full space, the subset specified by
-# a "window". Arguments [idx2min,idx2max] give the inclusive lowest
-# and highest index in the seq2 direction, one element for each index along 
-# the seq1 direction. Thus seq1, idx2min, and idx2max should all be of
-# equal length
-
-function dtwwindowed(seq1::Vector, seq2::Vector,
-                     idx2min::Vector, idx2max::Vector,
-                     distance::Function=Distance.square)
-
-    const m=length(seq2) # of rows  in cost matrix
-    const n=length(seq1) # of columns in cost matrix
-    @assert n==length(idx2min)
-    @assert n==length(idx2max)
-    @assert 1==minimum(idx2min)
-    @assert m==maximum(idx2max)
-
-    # Build the (n x m) cost matrix into a WindowedMatrix, because it's ragged.
-    # That type gives efficient storage with convenient [r,c] indexing and returns
-    # Inf when accessed outside the window.
-    cost = WindowedMatrix(idx2min, idx2max, Inf)
-
-    # First column first
-    cost[1,1] = distance(seq1[1], seq2[1])
-    for r=2:idx2max[1]
-        cost[r,1] = cost[r-1,1]  + distance(seq1[1], seq2[r])
-    end
-
-    # Complete the cost matrix from columns 2 to m.
-    for c=2:n
-        for r=idx2min[c]:idx2max[c]
-            best_neighbor_cost = min(cost[r-1,c], cost[r-1,c-1], cost[r,c-1])
-            cost[r,c] = best_neighbor_cost + distance(seq1[c], seq2[r])
-        end
-    end
-    trackcols, trackrows = trackback(cost)
-    cost[end,end], trackcols, trackrows
 end
