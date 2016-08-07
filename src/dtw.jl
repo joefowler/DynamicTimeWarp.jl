@@ -46,6 +46,9 @@ function dtw(
         seq2::AbstractMatrix,
         dist::SemiMetric = SqEuclidean()
     )
+    if size(seq1,1) != size(seq2,1)
+        throw(ArgumentError("Provided time series don't have same number of variables, size(seq1,1) must equal size(seq2,1)"))
+    end
     s1 = [view(seq1,:,i) for i = 1:size(seq1,2)]
     s2 = [view(seq2,:,i) for i = 1:size(seq2,2)]
     dtw(s1,s2,dist)

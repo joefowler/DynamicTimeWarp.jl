@@ -2,6 +2,7 @@
 module DynamicTimeWarp
 
 using Distances
+import Compat:view
 
 export dtw,
        dba,
