@@ -1,5 +1,5 @@
 using DynamicTimeWarp
-if VERSION >= v"0.5.0-dev"
+if VERSION >= v"0.5.0-"
     using Base.Test
 else
     using BaseTestNext
