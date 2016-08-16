@@ -73,10 +73,3 @@ function setindex!(W::WindowedMatrix, val, r::Integer, c::Integer)
     W.cost[W.idxcol[c]+offset] = val
     return W
 end
-
-
-# To do:
-# 
-# * Ways to convert to a dense matrix
-# * Can I make rowmin, rowmax, rowspercol, idxcol somehow immuatable? If not, then
-#   it's easy to break the invariants of the object.
